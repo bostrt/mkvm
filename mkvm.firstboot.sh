@@ -19,3 +19,10 @@ RHN_PASS=$(tail -n 1 /root/rhn_creds)
 subscription-manager --username=$RHN_USER --password=$RHN_PASS register --auto-attach
 
 rm /root/rhn_creds
+
+# Run plugins
+tar xzf /root/plugins.tar.gz -C /root/
+for plugin in /root/plugins/*; do 
+  chmod +x ${plugin}/init.sh # Make sure it's executable.
+  sh ${plugin}/init.sh
+done

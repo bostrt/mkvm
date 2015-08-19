@@ -104,15 +104,17 @@ sed "s/\$IPADDR/$IPADDR/" $MKVM_DIR/mkvm.ifcfg-eth0 > $TMP_ifcfgeth0
 # Set hostname in network file for guest.
 sed "s/\$HOSTNAME/$VMNAME/" $MKVM_DIR/mkvm.network > $TMP_network
 
+# tar up plugins to be sent to the server.
+tar -czf $MKVM_DIR/plugins.tar.gz -C $MKVM_DIR plugins/ &> /dev/null
+
 # Download and build the VM.
-
 #--install lsof,emacs-nox,unzip \
-
 virt-builder \
 --hostname $VMNAME \
 --root-password password:rhel_root_password \
 --upload $SSH_CERT:/root/remote_id_rsa.pub \
 --upload $RHN_CREDS:/root/rhn_creds \
+--upload $MKVM_DIR/plugins.tar.gz:/root/plugins.tar.gz \
 --firstboot $MKVM_DIR/mkvm.firstboot.sh \
 --upload $TMP_ifcfgeth0:/etc/sysconfig/network-scripts/ifcfg-eth0 \
 --upload $TMP_network:/etc/sysconfig/network \
@@ -121,7 +123,7 @@ virt-builder \
 $OSVERSION
 
 # Clean up temp files.
-rm $TMP_ifcfgeth0 $TMP_network
+rm $TMP_ifcfgeth0 $TMP_network $MKVM_DIR/plugins.tar.gz
 
 if [[ $? -ne 0 ]]; then
     fatal "Error creating new image"
