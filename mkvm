@@ -1,0 +1,158 @@
+#!/bin/bash
+
+OPTSTRING=":b:n:o:i:h"
+SSH_CERT=$HOME/.ssh/id_rsa.pub
+# Format of RHN_CREDS file should be: 1st line Username. 2nd line Password.
+RHN_CREDS=$HOME/.rhn
+IMAGE_DIR=$HOME/images
+RED=$(tput setaf 1)
+BOLD=$(tput bold)
+NORM=$(tput sgr0)
+VMNAME=
+OSVERSION=
+IPADDR=
+ARG_ERR=0
+
+# Print help.
+function mkvm_help() {
+    echo "mkvm -n name -i ip_addr -o os_version [-ssh public_key] [-rhn rhn_creds_file]"
+}
+
+# Print error message.
+function error() {
+    echo -e "$RED$*$NORM"
+}
+
+# Print fatal error message.
+function fatal() {
+    echo -e "$RED$BOLD$*$NORM"
+}
+
+# Parse arguments
+while getopts $OPTSTRING opt; do
+    case $opt in
+	n)        
+	    VMNAME="$OPTARG"
+	    ;;
+	o)
+	    OSVERSION="$OPTARG"
+	    ;;
+	i)
+	    IPADDR="$OPTARG"
+	    ;;
+        ssh)
+            SSH_CERT="$OPTARG"
+            ;;
+        rhn)
+            RHN_CREDS="$OPTARG"
+            ;;
+	h)
+	    mkvm_help
+	    exit 0
+	    ;;
+	:)
+	    error "Missing options for -$OPTARG"
+	    ;;
+	*) 
+	    echo "Invalid options: -$OPTARG"
+	    ;;
+	    
+    esac
+done
+
+# Validate arguments.
+if [[ "$VMNAME" == "" ]]; then
+    error "VM Name (-n) is required."
+    ARG_ERR=1
+fi
+
+if [[ "$IPADDR" == "" ]]; then
+    error "IP Address (-i) is required."
+    ARG_ERR=1
+fi
+
+if [[ "$OSVERSION" == "" ]]; then
+    error "OS Version (-o) is required."
+    ARG_ERR=1
+fi
+
+if [[ "$SSH_CERT" == "" ]]; then
+    error "SSH public key (-ssh) required."
+    ARG_ERR=1
+fi
+
+if [[ "$RHN_CREDS" == "" ]]; then
+    error "RHN/RHSM credentials (-rhn) required."
+    ARG_ERR=1
+fi
+
+if [[ $ARG_ERR -ne 0 ]]; then
+    fatal "Exiting due to errors."
+    exit 1
+fi
+
+# Create some temp folders to store customized configs.
+TMP_ifcfgeth0=$(mktemp)
+TMP_network=$(mktemp)
+MKVM_DIR=$(dirname $(readlink -f $0))
+
+# Ensure images dir has been created
+mkdir $IMAGE_DIR &> /dev/null
+
+# Set static IP in ifcfg-eth0 file for guest.
+sed "s/\$IPADDR/$IPADDR/" $MKVM_DIR/mkvm.ifcfg-eth0 > $TMP_ifcfgeth0
+# Set hostname in network file for guest.
+sed "s/\$HOSTNAME/$VMNAME/" $MKVM_DIR/mkvm.network > $TMP_network
+
+# Download and build the VM.
+
+#--install lsof,emacs-nox,unzip \
+
+virt-builder \
+--hostname $VMNAME \
+--root-password password:rhel_root_password \
+--upload $SSH_CERT:/root/remote_id_rsa.pub \
+--upload $RHN_CREDS:/root/rhn_creds \
+--firstboot $MKVM_DIR/mkvm.firstboot.sh \
+--upload $TMP_ifcfgeth0:/etc/sysconfig/network-scripts/ifcfg-eth0 \
+--upload $TMP_network:/etc/sysconfig/network \
+--upload $MKVM_DIR/mkvm.resolv.conf:/etc/resolv.conf \
+--output $IMAGE_DIR/$VMNAME-$OSVERSION.img \
+$OSVERSION
+
+# Clean up temp files.
+rm $TMP_ifcfgeth0 $TMP_network
+
+if [[ $? -ne 0 ]]; then
+    fatal "Error creating new image"
+    exit 1
+fi
+
+# Install the new image in libvirt
+virt-install \
+--connect=qemu:///system \
+--name $VMNAME \
+--cpu host \
+--vcpus 1 \
+--ram 2048 \
+--network=network:default_static,model=virtio \
+--os-type=linux \
+--disk path=$IMAGE_DIR/$VMNAME-$OSVERSION.img \
+--graphics=spice \
+--import \
+--noautoconsole \
+--noreboot
+
+if [[ $? -ne 0 ]]; then
+    fatal "Error installing virtual machine."
+    exit 1
+fi
+
+# Update hypervisor's host file with new guest's IP and hostname.
+echo $IPADDR $VMNAME | sudo tee -a /etc/hosts
+
+if [[ $? -ne 0 ]]; then
+    fatal "Error adding new VM IP address to hypervisor hosts file."
+    error "Virtual machine was installed successfully."
+    exit 1
+fi
