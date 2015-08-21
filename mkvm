@@ -2,8 +2,6 @@
 
 OPTSTRING=":b:n:o:i:h"
 SSH_CERT=$HOME/.ssh/id_rsa.pub
-# Format of RHN_CREDS file should be: 1st line Username. 2nd line Password.
-RHN_CREDS=$HOME/.rhn
 IMAGE_DIR=$HOME/images
 RED=$(tput setaf 1)
 BOLD=$(tput bold)
@@ -15,7 +13,7 @@ ARG_ERR=0
 
 # Print help.
 function mkvm_help() {
-    echo "mkvm -n name -i ip_addr -o os_version [-ssh public_key] [-rhn rhn_creds_file]"
+    echo "mkvm -n name -i ip_addr -o os_version [-ssh public_key]"
 }
 
 # Print error message.
@@ -42,9 +40,6 @@ while getopts $OPTSTRING opt; do
 	    ;;
         ssh)
             SSH_CERT="$OPTARG"
-            ;;
-        rhn)
-            RHN_CREDS="$OPTARG"
             ;;
 	h)
 	    mkvm_help
@@ -81,11 +76,6 @@ if [[ "$SSH_CERT" == "" ]]; then
     ARG_ERR=1
 fi
 
-if [[ "$RHN_CREDS" == "" ]]; then
-    error "RHN/RHSM credentials (-rhn) required."
-    ARG_ERR=1
-fi
-
 if [[ $ARG_ERR -ne 0 ]]; then
     fatal "Exiting due to errors."
     exit 1
@@ -113,7 +103,6 @@ virt-builder \
 --hostname $VMNAME \
 --root-password password:rhel_root_password \
 --upload $SSH_CERT:/root/remote_id_rsa.pub \
---upload $RHN_CREDS:/root/rhn_creds \
 --upload $MKVM_DIR/plugins.tar.gz:/root/plugins.tar.gz \
 --firstboot $MKVM_DIR/mkvm.firstboot.sh \
 --upload $TMP_ifcfgeth0:/etc/sysconfig/network-scripts/ifcfg-eth0 \
