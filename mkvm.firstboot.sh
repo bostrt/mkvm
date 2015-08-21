@@ -1,8 +1,5 @@
 #!/bin/bash
 
-mkdir /root/.ssh
-cat /root/remote_id_rsa.pub >> /root/.ssh/authorized_keys
-
 # password is 'redhat' ¬_¬
 useradd -r -s /bin/bash -m -p '$1$nzNcwr0G$ibOno/ZV60fAuy5lDkTjg.' redhat
 mkdir /home/redhat/.ssh
@@ -24,5 +21,5 @@ rm /root/rhn_creds
 tar xzf /root/plugins.tar.gz -C /root/
 for plugin in /root/plugins/*; do 
   chmod +x ${plugin}/init.sh # Make sure it's executable.
-  sh ${plugin}/init.sh
+  PLUGINS_DIR=${plugin} sh ${plugin}/init.sh
 done
