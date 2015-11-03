@@ -13,10 +13,10 @@ rm -f /root/remote_id_rsa.pub
 # Run plugins
 tar xzf /root/plugins.tar.gz -C /root/
 for plugin in /root/plugins/*; do 
-    echo "Starting plugin $(basename ${plugin}) install..."
+    echo "Starting plugin '$(basename ${plugin})' install..."
     chmod +x ${plugin}/init.sh # Make sure it's executable.
     PLUGINS_DIR=${plugin} sh ${plugin}/init.sh
-    echo "Plugin $(basename ${plugin}) installation complete!"
+    echo "Plugin '$(basename ${plugin})' installation complete!"
 done
 
 # Cleanup plugins tar
