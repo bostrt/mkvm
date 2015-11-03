@@ -7,9 +7,15 @@ touch /home/redhat/.ssh/authorized_keys
 cat /root/remote_id_rsa.pub >> /home/redhat/.ssh/authorized_keys
 chown -R redhat:redhat /home/redhat/.ssh
 
+# Cleanup public key
+rm -f /root/remote_id_rsa.pub
+
 # Run plugins
 tar xzf /root/plugins.tar.gz -C /root/
 for plugin in /root/plugins/*; do 
   chmod +x ${plugin}/init.sh # Make sure it's executable.
   PLUGINS_DIR=${plugin} sh ${plugin}/init.sh
 done
+
+# Cleanup plugins tar
+rm -f /root/plugins.tar.gz
