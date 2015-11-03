@@ -9,7 +9,7 @@ else
     VM_NAME=$1
 fi
 
-virsh destory $VM_NAME
-virsh undefine $VM_NAME
+sudo virsh destroy $VM_NAME
+sudo virsh undefine $VM_NAME
 
 echo "Don't forget to remove the /etc/hosts entry for the VM!"
