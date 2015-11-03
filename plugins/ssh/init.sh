@@ -4,3 +4,6 @@
 
 mkdir /root/.ssh
 cat $PLUGINS_DIR/*.pub >> /root/.ssh/authorized_keys
+
+# Update selinux context so that this actually works
+chcon -t ssh_home_t /root/.ssh/authorized_keys
