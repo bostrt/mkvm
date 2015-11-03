@@ -46,3 +46,7 @@ fi
 
 # EAP Manifest
 # puppet apply plugins/puppet/manifests/eap6.pp
+
+# Disable puppet repo since it won't likely need updates and will just cause yum to be slower
+echo "Disableing puppetlabs repo"
+sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/puppetlabs.repo
