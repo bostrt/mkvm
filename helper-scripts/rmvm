@@ -1,0 +1,15 @@
+#!/bin/bash
+# Script to destroy and remove VMs completely
+# useful for testing :)
+
+if [ -z $1 ]; then
+    # Requires a VM name to destroy/undefine
+    echo "$0: $VM_NAME"
+else
+    VM_NAME=$1
+fi
+
+virsh destory $VM_NAME
+virsh undefine $VM_NAME
+
+echo "Don't forget to remove the /etc/hosts entry for the VM!"

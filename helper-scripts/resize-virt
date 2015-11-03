@@ -1,0 +1,42 @@
+#!/bin/bash
+# script to auto resize virts
+# directly from example #1 on http://libguestfs.org/virt-resize.1.html
+
+# Assumptions:
+# You always want to add 5G
+# You're always resizing /dev/sda3 (for the images I use, that is /)
+
+if [ -z $1 ]; then
+    echo "Please specific an image to resize"
+    exit 1
+else
+    image=$1
+fi
+
+if ! [ -f $image ]; then
+    echo "$image does not exist!"
+    echo "Ensure that you're in the images directory for virt-builder"
+    exit 2
+fi
+
+virt-filesystems --long -h --all -a $image
+# Just in case /dev/sda3 doesn't exist...
+read -p "Is /dev/sda3 the device? " stop
+
+if [ $stop == "n" ]; then
+    echo "Aborting resize of $image"
+    exit 1
+fi
+
+truncate -r $image $image-new
+truncate -s +5G $image-new
+ 
+# Note "/dev/sda2" is a partition inside the "olddisk" file.
+virt-resize --expand /dev/sda3 $image $image-new
+
+# once the resize is done then we save the old one until we can test
+# and just rename the new one in place to prevent virt-manager changes
+mv $image $image-old
+mv $image-new $image
+
+echo "Done!"
