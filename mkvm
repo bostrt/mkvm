@@ -142,7 +142,7 @@ fi
 echo
 # Update hypervisor's host file with new guest's IP and hostname.
 echo "Appending to /etc/hosts:"
-echo "$IPADDR $VMNAME" | sudo tee -a /etc/host
+echo "$IPADDR $VMNAME" | sudo tee -a /etc/hosts
 
 if [[ $? -ne 0 ]]; then
     fatal "Error adding new VM IP address to hypervisor hosts file."
