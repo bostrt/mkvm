@@ -19,3 +19,5 @@ done
 
 # Cleanup plugins tar
 rm -f /root/plugins.tar.gz
+
+echo "VM configuration complete!!"
