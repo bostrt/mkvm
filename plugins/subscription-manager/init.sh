@@ -27,3 +27,8 @@ if [ `grep '7\.' /etc/redhat-release | wc -l` -eq 1 ]; then
     subscription-manager repos --enable=rhel-7-server-rpms;
 fi
 
+if [[ $? -eq 0 ]]; then
+    # disable the preconfigured repositories from virt-builder
+    echo "Disabling download.devel.redhat.com repository"
+    sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/download.devel.redhat.com.repo
+fi
