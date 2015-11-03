@@ -2,9 +2,16 @@
 # Rename creds.sample to just creds and replace username and password with your Red Hat login credentials.
 
 if [ -e ${HOME}/.rhn ]; then
+    echo "Using ${HOME}/.rhn credentials"
     source ${HOME}/.rhn
 else
-    source $PLUGINS_DIR/creds
+    if [ -e $PLUGINS_DIR/creds ]; then
+        echo "Using $PLUGINS_DIR/creds credentials"
+        source $PLUGINS_DIR/creds
+    else
+        echo "No RHSM credentials found. Aborting RHSM configuration."
+        exit
+    fi
 fi
 
 subscription-manager register --username=$RHN_USER --password=$RHN_PASSWORD --auto-attach
