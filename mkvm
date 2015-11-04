@@ -98,13 +98,13 @@ sed "s/\$HOSTNAME/$VMNAME/" $MKVM_DIR/mkvm.network > $TMP_network
 tar -czf $MKVM_DIR/plugins.tar.gz -C $MKVM_DIR plugins/ &> /dev/null
 
 # Download and build the VM.
-#--install lsof,emacs-nox,unzip \
 virt-builder \
 --hostname $VMNAME \
 --root-password password:rhel_root_password \
 --upload $SSH_CERT:/root/remote_id_rsa.pub \
 --upload $MKVM_DIR/plugins.tar.gz:/root/plugins.tar.gz \
 --firstboot $MKVM_DIR/mkvm.firstboot.sh \
+--install lsof,emacs-nox,unzip,vim \
 --upload $TMP_ifcfgeth0:/etc/sysconfig/network-scripts/ifcfg-eth0 \
 --upload $TMP_network:/etc/sysconfig/network \
 --upload $MKVM_DIR/mkvm.resolv.conf:/etc/resolv.conf \
