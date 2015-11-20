@@ -1,6 +1,12 @@
 #!/bin/bash
 # Rename creds.sample to just creds and replace username and password with your Red Hat login credentials.
 
+# ensure that the system is RHEL :)
+if [ `grep 'Red Hat Enterprise Linux' /etc/redhat-release | wc -l` -eq 1 ]; then
+    echo "Subscription-manager plugin doesn't apply; OS is not RHEL. Aborting plugin..."
+    exit
+fi
+
 if [ -e $PLUGINS_DIR/creds ]; then
     echo "Using $PLUGINS_DIR/creds credentials"
     source $PLUGINS_DIR/creds
