@@ -10,6 +10,15 @@ chown -R redhat:redhat /home/redhat/.ssh
 # Cleanup public key
 rm -f /root/remote_id_rsa.pub
 
+# Ensure that the network device is up 
+# a restart ensure that changes made are applied
+service network restart
+# and that ssh is on
+service sshd start
+
+# When the network is configured, you can install stuff
+yum install tar -y --nogpgcheck
+
 # Run plugins
 tar xzf /root/plugins.tar.gz -C /root/
 for plugin in /root/plugins/*; do 
