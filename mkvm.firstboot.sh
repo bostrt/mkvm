@@ -23,9 +23,13 @@ yum install tar -y --nogpgcheck
 tar xzf /root/plugins.tar.gz -C /root/
 for plugin in /root/plugins/*; do 
     echo "Starting plugin '$(basename ${plugin})' install..."
-    chmod +x ${plugin}/init.sh # Make sure it's executable.
-    PLUGINS_DIR=${plugin} sh ${plugin}/init.sh
-    echo "Plugin '$(basename ${plugin})' installation complete!"
+    if [ -e ${plugin}/init.sh ]; then
+        chmod +x ${plugin}/init.sh # Make sure it's executable.
+        PLUGINS_DIR=${plugin} sh ${plugin}/init.sh
+        echo "Plugin '$(basename ${plugin})' installation complete!"
+    else
+        echo "Plugin '$(basename ${plugin})' has a missing or disabled init.sh. Skipping plugin."
+    fi
 done
 
 # Cleanup plugins tar
