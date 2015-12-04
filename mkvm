@@ -130,7 +130,7 @@ virt-install \
 --cpu host-model-only \
 --vcpus 1 \
 --ram 2048 \
---network=network:default,model=virtio \
+--network=network:default_static,model=virtio \
 --os-type=linux \
 --disk path=$IMAGE_DIR/$VMNAME-$OSVERSION.img \
 --graphics=spice \
