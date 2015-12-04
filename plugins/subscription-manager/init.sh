@@ -17,6 +17,11 @@ fi
 
 subscription-manager register --username=$RHN_USER --password=$RHN_PASSWORD --auto-attach
 
+if [ "$?" -ne 0 ]; then
+    echo "subscription-manager registeration failed! Aborting..."
+    exit 1
+fi
+
 # disable all repos
 subscription-manager repos --disable="*"
 
