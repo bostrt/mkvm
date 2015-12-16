@@ -16,11 +16,11 @@ sudo virsh undefine $VM_NAME
 # remove entry from /etc/hosts
 HOST_ENTRY=$(grep $VM_NAME /etc/hosts)
 
-if [[ $(echo "$HOST_ENTRY" | wc -l) -ne 1 ]]; then
+if [[ $(echo "$HOST_ENTRY" | wc -l) -gt 1 ]]; then
     echo "More than one /etc/hosts entry for $VM_NAME:"
     echo "$HOST_ENTRY"
     exit 1
-elif [[ $(echo "$HOST_ENTRY" | wc -l) -ne 0 ]]; then
+elif [[ $(echo "$HOST_ENTRY" | wc -l) -eq 0 ]]; then
     echo "No /etc/hosts entry for $VM_NAME"
 else
     sudo sed -i "s/$HOST_ENTRY//g" /etc/hosts
