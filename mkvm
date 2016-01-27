@@ -65,11 +65,6 @@ if [[ "$VMNAME" == "" ]]; then
     ARG_ERR=1
 fi
 
-if [[ "$IPADDR" == "" ]]; then
-    error "IP Address (-i) is required."
-    ARG_ERR=1
-fi
-
 if [[ "$OSVERSION" == "" ]]; then
     error "OS Version (-o) is required."
     ARG_ERR=1
@@ -92,6 +87,16 @@ MKVM_DIR=$(dirname $(readlink -f $0))
 
 # Ensure images dir has been created
 mkdir $IMAGE_DIR &> /dev/null
+
+if [ -z $IPADDR ]; then
+    echo "The IP address was not provided. Using next IP in gateway range."
+    # Grab latest IP address in the correct range (derived from the network gateway in use)
+    ipRange=$(grep -i gateway $MKVM_DIR/mkvm.network | cut -d= -f2 | rev | sed -r 's/^[0-9]+\././' | rev)
+    # grab the highest IP for the static network
+    LAST_HOST=$(egrep -o "$ipRange[0-9]+" /etc/hosts | rev | cut -f1 -d. | rev | sort -n | tail -n1)
+    # put together gateway range and last host entry to create new ip
+    IPADDR=$ipRange$((LAST_HOST+1))
+fi
 
 # Set static IP in ifcfg-eth0 file for guest.
 sed "s/\$IPADDR/$IPADDR/" $MKVM_DIR/mkvm.ifcfg-eth0 > $TMP_ifcfgeth0
