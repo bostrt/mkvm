@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPTSTRING=":b:n:o:i:h:s"
+OPTSTRING=":b:n:o:i:sh"
 SSH_CERT=$HOME/.ssh/id_rsa.pub
 IMAGE_DIR=$HOME/images
 RED=$(tput setaf 1)
